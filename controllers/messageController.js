@@ -90,121 +90,123 @@
 // };
 
 // ROUTEE
-// const request = require("request");
-// const appId = "63d81bc515e9a4000138b1f9";
-// const appSecret = "d4CXsM5Yat";
+const request = require("request");
+const appId = "63d81bc515e9a4000138b1f9";
+const appSecret = "d4CXsM5Yat";
 
-// const encodedData = Buffer.from(appId + ":" + appSecret).toString("base64");
-// const senderId = "ROUTEE";
+const encodedData = Buffer.from(appId + ":" + appSecret).toString("base64");
+const senderId = "ROUTEE";
 
-// exports.sendMessage = async (req, res, next) => {
-//   const body = req.body.message;
-//   const groups = [...req.body.contacts];
-//   const g = "";
-//   console.log(groups);
-//   const from = req.body.senderId || senderId;
-
-//   const data = JSON.stringify({
-//     body,
-//     to: groups,
-//     from,
-//   });
-
-//   request.post(
-//     {
-//       headers: {
-//         "content-type": "application/x-www-form-urlencoded",
-//         authorization: `Basic ${encodedData}`,
-//       },
-//       url: "https://auth.routee.net/oauth/token",
-//       body: "grant_type=client_credentials",
-//     },
-//     function (error, response, body) {
-//       const parsedBody = JSON.parse(body);
-//       const { access_token } = parsedBody;
-//       // console.log(access_token)
-//       if (!access_token) {
-//         return res.status(401).json({
-//           status: "fail",
-//           message: "Unauthorized",
-//         });
-//       }
-
-//       request.post(
-//         {
-//           headers: {
-//             "content-type": "application/json",
-//             authorization: `Bearer ${access_token}`,
-//           },
-//           url: "https://connect.routee.net/sms/campaign",
-//           body: data,
-//         },
-//         function (error, response, body) {
-//           const parsedBody = JSON.parse(body);
-//           const { code, developerMessage } = parsedBody;
-//           console.log(parsedBody);
-//           res.status(201).json({
-//             status: "success",
-//             message: developerMessage
-//               ? developerMessage
-//               : "Your campaign has been sent successfully",
-//           });
-//         }
-//       );
-//     }
-//   );
-// };
-
-// Nexmo;
-const apiSecret = process.env.API_SECRET || "OAqkGDNBi3EpxmCq";
-const apiKey = process.env.API_KEY || "c0b81754";
-const limit = Number(process.env.LIMIT) || 20;
-const Nexmo = require("nexmo");
-
-// Nexmo Init
-const nexmo = new Nexmo({ apiKey, apiSecret });
-
-// Send Message
 exports.sendMessage = async (req, res, next) => {
-  const { message, senderId, contacts } = req.body;
+  const body = req.body.message;
+  const groups = [...req.body.contacts];
+  const g = "";
+  console.log(groups);
+  const from = req.body.senderId || senderId;
 
-  if (contacts.length > limit)
-    return res.status(400).json({
-      message: `Upload is more than maximum allowed of ${limit}`,
-    });
+  const data = JSON.stringify({
+    body,
+    to: groups,
+    from,
+  });
 
-  const sendBulkSms = (senderName, message, phoneNumbers) => {
-    //Loop through each number and send sms message to
-    for (let i = 0; i < phoneNumbers.length; i++) {
-      let number = phoneNumbers[i];
+  request.post(
+    {
+      headers: {
+        "content-type": "application/x-www-form-urlencoded",
+        authorization: `Basic ${encodedData}`,
+      },
+      url: "https://auth.routee.net/oauth/token",
+      body: "grant_type=client_credentials",
+    },
+    function (error, response, body) {
+      const parsedBody = JSON.parse(body);
+      const { access_token } = parsedBody;
+      // console.log(access_token)
+      if (!access_token) {
+        return res.status(401).json({
+          status: "fail",
+          message: "Unauthorized",
+        });
+      }
 
-      nexmo.message.sendSms(senderName, number, message, (err, result) => {
-        if (err) {
-          console.log(err);
-          return res.status(400).json({
-            status: "fail",
-            message: "Error sending your campaign",
-          });
-        }
-
-        console.log(result);
-
-        // after the message has been successfully sent to the last number, send a server response
-        if (i === phoneNumbers.length - 1) {
-          console.log("message sent");
-          // You can now return server response.
-
+      request.post(
+        {
+          headers: {
+            "content-type": "application/json",
+            authorization: `Bearer ${access_token}`,
+          },
+          url: "https://connect.routee.net/sms/campaign",
+          body: data,
+        },
+        function (error, response, body) {
+          const parsedBody = JSON.parse(body);
+          const { code, developerMessage } = parsedBody;
+          console.log(parsedBody);
           res.status(201).json({
             status: "success",
-            message: "Your campaign has been sent successfully",
+            message: developerMessage
+              ? developerMessage
+              : "Your campaign has been sent successfully",
           });
         }
-      });
+      );
     }
-  };
-
-  sendBulkSms(senderId, message, [...contacts]);
+  );
 };
+
+// Nexmo;
+// const apiSecret = process.env.API_SECRET
+//   ? process.env.API_SECRET
+//   : "pR5Fl81ubI5EfEHm";
+// const apiKey = process.env.API_KEY ? process.env.API_KEY : "863f55d0";
+// const limit = Number(process.env.LIMIT) ? Number(process.env.LIMIT) : 20;
+// const Nexmo = require("nexmo");
+
+// // Nexmo Init
+// const nexmo = new Nexmo({ apiKey, apiSecret });
+
+// // Send Message
+// exports.sendMessage = async (req, res, next) => {
+//   const { message, senderId, contacts } = req.body;
+
+//   if (contacts.length > limit)
+//     return res.status(400).json({
+//       message: `Upload is more than maximum allowed of ${limit}`,
+//     });
+
+//   const sendBulkSms = (senderName, message, phoneNumbers) => {
+//     //Loop through each number and send sms message to
+//     for (let i = 0; i < phoneNumbers.length; i++) {
+//       let number = phoneNumbers[i];
+
+//       nexmo.message.sendSms(senderName, number, message, (err, result) => {
+//         if (err) {
+//           console.log(err);
+//           return res.status(400).json({
+//             status: "fail",
+//             message: "Error sending your campaign",
+//           });
+//         }
+
+//         console.log(result);
+
+//         // after the message has been successfully sent to the last number, send a server response
+//         if (i === phoneNumbers.length - 1) {
+//           console.log("message sent");
+//           // You can now return server response.
+
+//           res.status(201).json({
+//             status: "success",
+//             message: "Your campaign has been sent successfully",
+//           });
+//         }
+//       });
+//     }
+//   };
+
+//   sendBulkSms(senderId, message, [...contacts]);
+// };
 
 // // Direct Route
 // const limit = Number(process.env.LIMIT) ? Number(process.env.LIMIT) : 20
