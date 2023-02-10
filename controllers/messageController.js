@@ -91,8 +91,8 @@
 
 // ROUTEE
 const request = require("request");
-const appId = "63d81bc515e9a4000138b1f9";
-const appSecret = "d4CXsM5Yat";
+const appId = "6307d130936a9b0001eed2de";
+const appSecret = "IhsK18CyiC";
 
 const encodedData = Buffer.from(appId + ":" + appSecret).toString("base64");
 const senderId = "ROUTEE";
